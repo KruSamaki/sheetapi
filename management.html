@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Management System</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .container {
+            width: 90%;
+            margin: auto;
+        }
+        h1, h2 {
+            text-align: center;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        table, th, td {
+            border: 1px solid black;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            text-align: center;
+            text-decoration: none;
+            outline: none;
+            color: #fff;
+            background-color: #4CAF50;
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 9px #999;
+        }
+        .btn:hover {
+            background-color: #3e8e41;
+        }
+        .btn:active {
+            background-color: #3e8e41;
+            box-shadow: 0 5px #666;
+            transform: translateY(4px);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Student Management System</h1>
+
+        <h2>Add New Student</h2>
+        <div class="form-group">
+            <label for="studentName">Student Name</label>
+            <input type="text" id="studentName" placeholder="Enter student name">
+        </div>
+        <div class="form-group">
+            <label for="studentID">Student ID</label>
+            <input type="text" id="studentID" placeholder="Enter student ID">
+        </div>
+        <div class="form-group">
+            <label for="studentClass">Class</label>
+            <input type="text" id="studentClass" placeholder="Enter class">
+        </div>
+        <button class="btn" onclick="addStudent()">Add Student</button>
+
+        <h2>Manage Scores</h2>
+        <div class="form-group">
+            <label for="scoreStudentID">Student ID</label>
+            <input type="text" id="scoreStudentID" placeholder="Enter student ID">
+        </div>
+        <div class="form-group">
+            <label for="subject">Subject</label>
+            <input type="text" id="subject" placeholder="Enter subject">
+        </div>
+        <div class="form-group">
+            <label for="score">Score</label>
+            <input type="number" id="score" placeholder="Enter score">
+        </div>
+        <button class="btn" onclick="addScore()">Add Score</button>
+
+        <h2>Mark Attendance</h2>
+        <div class="form-group">
+            <label for="attendanceStudentID">Student ID</label>
+            <input type="text" id="attendanceStudentID" placeholder="Enter student ID">
+        </div>
+        <div class="form-group">
+            <label for="attendanceStatus">Attendance Status</label>
+            <select id="attendanceStatus">
+                <option value="Present">Present</option>
+                <option value="Absent">Absent</option>
+            </select>
+        </div>
+        <button class="btn" onclick="markAttendance()">Mark Attendance</button>
+
+        <h2>Student List</h2>
+        <table id="studentTable">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Class</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Student data will be inserted here -->
+            </tbody>
+        </table>
+
+        <h2>Scores</h2>
+        <table id="scoreTable">
+            <thead>
+                <tr>
+                    <th>Student ID</th>
+                    <th>Subject</th>
+                    <th>Score</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Score data will be inserted here -->
+            </tbody>
+        </table>
+
+        <h2>Attendance</h2>
+        <table id="attendanceTable">
+            <thead>
+                <tr>
+                    <th>Student ID</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Attendance data will be inserted here -->
+            </tbody>
+        </table>
+    </div>
+
+    <script src="https://apis.google.com/js/api.js"></script>
+    <script>
+        const API_KEY = 'AIzaSyBlN7d0VWpUrUiLjw4co4INU2pCEYLgzh0';
+        const SPREADSHEET_ID = '1u5YGkaGfTlY3EjPXFil5xA2sD9Jshl6uHMayT32fDHY';
+        let students = [];
+        let scores = [];
+        let attendance = [];
+
+        function initClient() {
+            gapi.client.init({
+                apiKey: API_KEY,
+                discoveryDocs: ['https://sheets.googleapis.com/$discovery/rest?version=v4'],
+            }).then(function() {
+                console.log('GAPI client initialized.');
+                fetchData();
+            });
+        }
+
+        function loadGapiClient() {
+            gapi.load('client', initClient);
+        }
+
+        function appendToSheet(data, range) {
+            const params = {
+                spreadsheetId: SPREADSHEET_ID,
+                range: range,
+                valueInputOption: 'RAW',
+                insertDataOption: 'INSERT_ROWS'
+            };
+
+            const valueRangeBody = {
+                majorDimension: 'ROWS',
+                values: data
+            };
+
+            gapi.client.sheets.spreadsheets.values.append(params, valueRangeBody).then((response) => {
+                console.log(response.result);
+            }, (error) => {
+                console.error(error.result.error.message);
+            });
+        }
+
+        function addStudent() {
+            const name = document.getElementById('studentName').value;
+            const id = document.getElementById('studentID').value;
+            const studentClass = document.getElementById('studentClass').value;
+
+            if (name && id && studentClass) {
+                students.push({ id, name, class: studentClass });
+                updateStudentTable();
+
+                // Save to Google Sheets
+                const data = [[id, name, studentClass]];
+                appendToSheet(data, 'Students!A:C');
+            } else {
+                alert('Please fill out all fields.');
+            }
+        }
+
+        function addScore() {
+            const id = document.getElementById('scoreStudentID').value;
+            const subject = document.getElementById('subject').value;
+            const score = document.getElementById('score').value;
+
+            if (id && subject && score) {
+                scores.push({ id, subject, score });
+                updateScoreTable();
+
+                // Save to Google Sheets
+                const data = [[id, subject, parseInt(score)]];
+                appendToSheet(data, 'Scores!A:C');
+            } else {
+                alert('Please fill out all fields.');
+            }
+        }
+
+        function markAttendance() {
+            const id = document.getElementById('attendanceStudentID').value;
+            const status = document.getElementById('attendanceStatus').value;
+
+            if (id && status) {
+                attendance.push({ id, status });
+                updateAttendanceTable();
+
+                // Save to Google Sheets
+                const data = [[id, status]];
+                appendToSheet(data, 'Attendance!A:B');
+            } else {
+                alert('Please fill out all fields.');
+            }
+        }
+
+        function updateStudentTable() {
+            const tbody = document.getElementById('studentTable').getElementsByTagName('tbody')[0];
+            tbody.innerHTML = '';
+
+            students.forEach(student => {
+                const row = tbody.insertRow();
+                const cell1 = row.insertCell(0);
+                const cell2 = row.insertCell(1);
+                const cell3 = row.insertCell(2);
+
+                cell1.textContent = student.id;
+                cell2.textContent = student.name;
+                cell3.textContent = student.class;
+            });
+        }
+
+        function updateScoreTable() {
+            const tbody = document.getElementById('scoreTable').getElementsByTagName('tbody')[0];
+            tbody.innerHTML = '';
+
+            scores.forEach(score => {
+                const row = tbody.insertRow();
+                const cell1 = row.insertCell(0);
+                const cell2 = row.insertCell(1);
+                const cell3 = row.insertCell(2);
+
+                cell1.textContent = score.id;
+                cell2.textContent = score.subject;
+                cell3.textContent = score.score;
+            });
+        }
+
+        function updateAttendanceTable() {
+            const tbody = document.getElementById('attendanceTable').getElementsByTagName('tbody')[0];
+            tbody.innerHTML = '';
+
+            attendance.forEach(record => {
+                const row = tbody.insertRow();
+                const cell1 = row.insertCell(0);
+                const cell2 = row.insertCell(1);
+
+                cell1.textContent = record.id;
+                cell2.textContent = record.status;
+            });
+        }
+
+        function fetchData() {
+            fetchSheetData('Students!A:C', function(data) {
+                students = data.map(row => ({ id: row[0], name: row[1], class: row[2] }));
+                updateStudentTable();
+            });
+
+            fetchSheetData('Scores!A:C', function(data) {
+                scores = data.map(row => ({ id: row[0], subject: row[1], score: row[2] }));
+                updateScoreTable();
+            });
+
+            fetchSheetData('Attendance!A:B', function(data) {
+                attendance = data.map(row => ({ id: row[0], status: row[1] }));
+                updateAttendanceTable();
+            });
+        }
+
+        function fetchSheetData(range, callback) {
+            const params = {
+                spreadsheetId: SPREADSHEET_ID,
+                range: range
+            };
+
+            gapi.client.sheets.spreadsheets.values.get(params).then(response => {
+                callback(response.result.values || []);
+            }, error => {
+                console.error(error.result.error.message);
+            });
+        }
+
+        // Load the GAPI client
+        loadGapiClient();
+    </script>
+</body>
+</html>
