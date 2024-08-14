@@ -77,7 +77,12 @@ if (postForm) {
                 'Content-Type': 'application/json',
             },
         })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
         .then(data => {
             document.getElementById('post-status').textContent = data.message;
             postForm.reset();
@@ -86,6 +91,7 @@ if (postForm) {
             console.error('Error posting data:', error);
             document.getElementById('post-status').textContent = 'Error submitting post!';
         });
+        
         
     });
 }
