@@ -63,12 +63,29 @@ if (postForm) {
         event.preventDefault();
         const title = document.getElementById('title').value;
         const content = document.getElementById('content').value;
+        const date = new Date().toLocaleDateString();
 
-        // Posting directly to Google Sheets requires additional server-side logic or a third-party service like Google Apps Script.
+        const postData = { title, content, date };
 
-        // For now, just logging the data for demonstration:
-        console.log({ title, content, date: new Date().toLocaleDateString() });
-        document.getElementById('post-status').textContent = 'Post submitted! (This is just a demo; real posting needs server-side code.)';
-        postForm.reset();
+        // Replace with your Google Apps Script Web App URL
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbwyHU2kBPR50xwhycpVWza3zuclQqF0YqEfB9zw8AlRicLfvgUqocJ0T_Crm_5abzx8/exec';
+
+        fetch(scriptURL, {
+            method: 'POST',
+            body: JSON.stringify(postData),
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('post-status').textContent = data.message;
+            postForm.reset();
+        })
+        .catch(error => {
+            console.error('Error posting data:', error);
+            document.getElementById('post-status').textContent = 'Error submitting post!';
+        });
     });
 }
+
