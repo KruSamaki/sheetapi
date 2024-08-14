@@ -3,27 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Forum</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Dynamic Website</title>
+    <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
     <header>
-        <h1>Welcome to the Forum</h1>
+        <h1>Welcome to the News Portal</h1>
         <nav>
-            <a href="category.html?category=General">General</a>
-            <a href="category.html?category=Tech">Tech</a>
-            <a href="category.html?category=Education">Education</a>
-            <a href="post.html">Create a Post</a>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="login.html">Admin Login</a></li>
+            </ul>
         </nav>
     </header>
 
-    <main>
-        <section id="latest-posts">
-            <h2>Latest Posts</h2>
-            <div id="posts-container"></div>
-        </section>
+    <main id="content">
+        <h2>Latest News</h2>
+        <div id="news-container">
+            <!-- News articles will be dynamically inserted here -->
+        </div>
     </main>
 
-    <script src="script.js"></script>
+    <footer>
+        <p>&copy; 2024 Samaki School</p>
+    </footer>
+
+    <script src="js/script.js"></script>
 </body>
 </html>
