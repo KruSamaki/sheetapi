@@ -68,7 +68,7 @@ if (postForm) {
         const postData = { title, content, date };
 
         // Replace with your Google Apps Script Web App URL
-        const scriptURL = 'https://script.google.com/macros/s/AKfycbwyHU2kBPR50xwhycpVWza3zuclQqF0YqEfB9zw8AlRicLfvgUqocJ0T_Crm_5abzx8/exec';
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbwFncQDmCBtbw_EPehisc9zdZksvKjTWiNPOeaC4rsLBLudaiYGl6ghNS1qyETd7M0g/exec';
 
         fetch(scriptURL, {
             method: 'POST',
@@ -86,6 +86,7 @@ if (postForm) {
             console.error('Error posting data:', error);
             document.getElementById('post-status').textContent = 'Error submitting post!';
         });
+        
     });
 }
 
